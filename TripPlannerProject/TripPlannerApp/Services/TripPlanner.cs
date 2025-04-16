@@ -1,4 +1,5 @@
 using TripPlannerApp.Models;
+using System.Text;
 
 namespace TripPlannerApp.Services;
 
@@ -73,7 +74,6 @@ public class TripPlanner
         Console.Clear();
         Console.WriteLine("--- Trip Itinerary (Grouped by Day) ---");
 
-        // Get all unique days from hotels, stops, and restaurants
         var allDays = hotels.Select(h => h.Day)
             .Concat(stops.Select(s => s.Day))
             .Concat(restaurants.Select(r => r.Day))
@@ -85,12 +85,9 @@ public class TripPlanner
         {
             Console.WriteLine($"\n📅 {day}");
 
-            // Hotel for this day
             var hotel = hotels.FirstOrDefault(h => h.Day == day);
-            if (hotel != null)
-                Console.WriteLine($"  🏨 Hotel: {hotel}");
+            if (hotel != null) Console.WriteLine($"  🏨 Hotel: {hotel}");
 
-            // Restaurants for this day
             var dayRestaurants = restaurants.Where(r => r.Day == day).ToList();
             if (dayRestaurants.Any())
             {
@@ -99,7 +96,6 @@ public class TripPlanner
                     Console.WriteLine($"    - {r}");
             }
 
-            // Stops for this day
             var stopsForDay = stops.Where(s => s.Day == day).ToList();
             if (stopsForDay.Any())
             {
@@ -113,7 +109,50 @@ public class TripPlanner
         Console.ReadLine();
     }
 
+    public void ExportItinerary()
+    {
+        Console.Clear();
+        Console.Write("Enter filename to export (e.g., itinerary.txt): ");
+        string fileName = Console.ReadLine() ?? "itinerary.txt";
 
+        var allDays = hotels.Select(h => h.Day)
+            .Concat(stops.Select(s => s.Day))
+            .Concat(restaurants.Select(r => r.Day))
+            .Distinct()
+            .OrderBy(day => day)
+            .ToList();
+
+        using StreamWriter writer = new StreamWriter(fileName);
+        writer.WriteLine("--- Trip Itinerary (Grouped by Day) ---");
+
+        foreach (var day in allDays)
+        {
+            writer.WriteLine($"\n📅 {day}");
+
+            var hotel = hotels.FirstOrDefault(h => h.Day == day);
+            if (hotel != null) writer.WriteLine($"  🏨 Hotel: {hotel}");
+
+            var dayRestaurants = restaurants.Where(r => r.Day == day).ToList();
+            if (dayRestaurants.Any())
+            {
+                writer.WriteLine("  🍽️ Restaurants:");
+                foreach (var r in dayRestaurants)
+                    writer.WriteLine($"    - {r}");
+            }
+
+            var stopsForDay = stops.Where(s => s.Day == day).ToList();
+            if (stopsForDay.Any())
+            {
+                writer.WriteLine("  📍 Stops:");
+                foreach (var s in stopsForDay)
+                    writer.WriteLine($"    - {s.Name} ({s.Notes})");
+            }
+        }
+
+        Console.WriteLine($"Itinerary exported to '{fileName}' successfully.");
+        Console.WriteLine("Press Enter to return to the menu...");
+        Console.ReadLine();
+    }
 
     private void AddHotel()
     {
@@ -122,7 +161,7 @@ public class TripPlanner
         Console.Write("Address: "); hotel.Address = Console.ReadLine() ?? "";
         Console.Write("Check-in time: "); hotel.CheckIn = Console.ReadLine() ?? "";
         Console.Write("Check-out time: "); hotel.CheckOut = Console.ReadLine() ?? "";
-        Console.Write("Day of stay (e.g., Monday): "); hotel.Day = Console.ReadLine() ?? "";
+        Console.Write("Day of stay (e.g., Day 1): "); hotel.Day = Console.ReadLine() ?? "";
         hotels.Add(hotel);
         Console.WriteLine("Hotel added. Press Enter to continue...");
         Console.ReadLine();
@@ -214,12 +253,11 @@ public class TripPlanner
         var restaurant = new Restaurant();
         Console.Write("Restaurant name: "); restaurant.Name = Console.ReadLine() ?? "";
         Console.Write("Location (associated stop or city): "); restaurant.Location = Console.ReadLine() ?? "";
-        Console.Write("Day of visit (e.g., Monday): "); restaurant.Day = Console.ReadLine() ?? "";
+        Console.Write("Day of visit (e.g., Day 1): "); restaurant.Day = Console.ReadLine() ?? "";
         restaurants.Add(restaurant);
         Console.WriteLine("Restaurant added. Press Enter to continue...");
         Console.ReadLine();
-}
-
+    }
 
     private void EditRestaurant()
     {
@@ -254,4 +292,10 @@ public class TripPlanner
         Console.WriteLine("Press Enter to return...");
         Console.ReadLine();
     }
+
+    // Helper methods for unit testing
+    public int HotelCount => hotels.Count;
+    public int StopCount => stops.Count;
+    public void TestAddHotel(Hotel hotel) => hotels.Add(hotel);
+    public void TestAddStop(Stop stop) => stops.Add(stop);
 }

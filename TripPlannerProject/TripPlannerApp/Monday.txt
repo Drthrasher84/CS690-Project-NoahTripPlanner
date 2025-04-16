@@ -1,0 +1,8 @@
+--- Trip Itinerary (Grouped by Day) ---
+
+📅 Monday
+  🏨 Hotel: Cali, 123 Main (Check-in: 11am, Check-out: 11pm)
+  🍽️ Restaurants:
+    - Yum yums, Cali
+  📍 Stops:
+    - The Pitt (Free to all)
