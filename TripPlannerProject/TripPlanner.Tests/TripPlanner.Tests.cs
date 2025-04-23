@@ -38,5 +38,22 @@ namespace TripPlanner.Tests
 
             Assert.Equal(initial + 1, planner.StopCount);
         }
+
+        [Fact]
+        public void AddRestaurant_ShouldIncreaseRestaurantCount()
+        {
+            var planner = new TripPlannerApp.Services.TripPlanner();
+            int initial = planner.RestaurantCount;
+
+            planner.TestAddRestaurant(new Restaurant
+            {
+                Name = "Testaurant",
+                Location = "Downtown",
+                Day = "Day 3"
+            });
+
+            Assert.Equal(initial + 1, planner.RestaurantCount);
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 using TripPlannerApp.Models;
+using TripPlannerApp.Utils;
 using System.Text;
 
 namespace TripPlannerApp.Services;
@@ -70,89 +71,28 @@ public class TripPlanner
     }
 
     public void ViewItinerary()
-    {
-        Console.Clear();
-        Console.WriteLine("--- Trip Itinerary (Grouped by Day) ---");
-
-        var allDays = hotels.Select(h => h.Day)
-            .Concat(stops.Select(s => s.Day))
-            .Concat(restaurants.Select(r => r.Day))
-            .Distinct()
-            .OrderBy(day => day)
-            .ToList();
-
-        foreach (var day in allDays)
         {
-            Console.WriteLine($"\n📅 {day}");
-
-            var hotel = hotels.FirstOrDefault(h => h.Day == day);
-            if (hotel != null) Console.WriteLine($"  🏨 Hotel: {hotel}");
-
-            var dayRestaurants = restaurants.Where(r => r.Day == day).ToList();
-            if (dayRestaurants.Any())
-            {
-                Console.WriteLine("  🍽️ Restaurants:");
-                foreach (var r in dayRestaurants)
-                    Console.WriteLine($"    - {r}");
-            }
-
-            var stopsForDay = stops.Where(s => s.Day == day).ToList();
-            if (stopsForDay.Any())
-            {
-                Console.WriteLine("  📍 Stops:");
-                foreach (var s in stopsForDay)
-                    Console.WriteLine($"    - {s.Name} ({s.Notes})");
-            }
+            Console.Clear();
+            string formatted = ItineraryFormatter.FormatGroupedByDay(hotels, stops, restaurants);
+            Console.WriteLine(formatted);
+            Console.WriteLine("\nPress Enter to return...");
+            Console.ReadLine();
         }
 
-        Console.WriteLine("\nPress Enter to return...");
-        Console.ReadLine();
-    }
 
     public void ExportItinerary()
-    {
-        Console.Clear();
-        Console.Write("Enter filename to export (e.g., itinerary.txt): ");
-        string fileName = Console.ReadLine() ?? "itinerary.txt";
-
-        var allDays = hotels.Select(h => h.Day)
-            .Concat(stops.Select(s => s.Day))
-            .Concat(restaurants.Select(r => r.Day))
-            .Distinct()
-            .OrderBy(day => day)
-            .ToList();
-
-        using StreamWriter writer = new StreamWriter(fileName);
-        writer.WriteLine("--- Trip Itinerary (Grouped by Day) ---");
-
-        foreach (var day in allDays)
         {
-            writer.WriteLine($"\n📅 {day}");
+            Console.Clear();
+            Console.Write("Enter filename to export (e.g., itinerary.txt): ");
+            string fileName = Console.ReadLine() ?? "itinerary.txt";
 
-            var hotel = hotels.FirstOrDefault(h => h.Day == day);
-            if (hotel != null) writer.WriteLine($"  🏨 Hotel: {hotel}");
+            string formatted = ItineraryFormatter.FormatGroupedByDay(hotels, stops, restaurants);
+            File.WriteAllText(fileName, formatted);
 
-            var dayRestaurants = restaurants.Where(r => r.Day == day).ToList();
-            if (dayRestaurants.Any())
-            {
-                writer.WriteLine("  🍽️ Restaurants:");
-                foreach (var r in dayRestaurants)
-                    writer.WriteLine($"    - {r}");
-            }
-
-            var stopsForDay = stops.Where(s => s.Day == day).ToList();
-            if (stopsForDay.Any())
-            {
-                writer.WriteLine("  📍 Stops:");
-                foreach (var s in stopsForDay)
-                    writer.WriteLine($"    - {s.Name} ({s.Notes})");
-            }
+            Console.WriteLine($"Itinerary exported to '{fileName}' successfully.");
+            Console.WriteLine("Press Enter to return to the menu...");
+            Console.ReadLine();
         }
-
-        Console.WriteLine($"Itinerary exported to '{fileName}' successfully.");
-        Console.WriteLine("Press Enter to return to the menu...");
-        Console.ReadLine();
-    }
 
     private void AddHotel()
     {
@@ -296,6 +236,8 @@ public class TripPlanner
     // Helper methods for unit testing
     public int HotelCount => hotels.Count;
     public int StopCount => stops.Count;
+    public int RestaurantCount => restaurants.Count;
     public void TestAddHotel(Hotel hotel) => hotels.Add(hotel);
     public void TestAddStop(Stop stop) => stops.Add(stop);
+    public void TestAddRestaurant(Restaurant r) => restaurants.Add(r);
 }
