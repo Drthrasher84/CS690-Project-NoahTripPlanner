@@ -81,18 +81,32 @@ public class TripPlanner
 
 
     public void ExportItinerary()
+    {
+        Console.Clear();
+        Console.Write("Enter filename to export (e.g., itinerary.txt): ");
+        string? input = Console.ReadLine();
+        string fileName = string.IsNullOrWhiteSpace(input) ? "itinerary.txt" : input;
+
+        if (string.IsNullOrWhiteSpace(fileName))
         {
-            Console.Clear();
-            Console.Write("Enter filename to export (e.g., itinerary.txt): ");
-            string fileName = Console.ReadLine() ?? "itinerary.txt";
-
-            string formatted = ItineraryFormatter.FormatGroupedByDay(hotels, stops, restaurants);
-            File.WriteAllText(fileName, formatted);
-
-            Console.WriteLine($"Itinerary exported to '{fileName}' successfully.");
-            Console.WriteLine("Press Enter to return to the menu...");
-            Console.ReadLine();
+            fileName = "itinerary.txt";
         }
+
+        string formatted = ItineraryFormatter.FormatGroupedByDay(hotels, stops, restaurants);
+
+        try
+        {
+            File.WriteAllText(fileName, formatted);
+            Console.WriteLine($"Itinerary exported to '{fileName}' successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ Error saving file: {ex.Message}");
+        }
+
+        Console.WriteLine("Press Enter to return to the menu...");
+        Console.ReadLine();
+    }
 
     private void AddHotel()
     {
